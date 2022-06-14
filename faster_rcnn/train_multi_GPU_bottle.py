@@ -13,7 +13,7 @@ from network_files import FasterRCNN, FastRCNNPredictor
 import train_utils.train_eval_utils as utils
 from train_utils import GroupedBatchSampler, create_aspect_ratio_groups, init_distributed_mode, save_on_master, mkdir
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1,3" 
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1,3" 
 def create_model(num_classes):
     # 如果显存很小，建议使用默认的FrozenBatchNorm2d
     # trainable_layers包括['layer4', 'layer3', 'layer2', 'layer1', 'conv1']， 5代表全部训练
