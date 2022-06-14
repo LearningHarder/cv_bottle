@@ -6,7 +6,7 @@ import torch
 import transforms
 from network_files import FasterRCNN, FastRCNNPredictor
 from backbone import resnet50_fpn_backbone
-from my_dataset import VOCDataSet
+from my_dataset_liu import BottleDataSet
 from train_utils import GroupedBatchSampler, create_aspect_ratio_groups
 from train_utils import train_eval_utils as utils
 
@@ -46,7 +46,7 @@ def main(args):
     print("Using {} device training.".format(device.type))
 
     # 用来保存coco_info的文件
-    res_dir = 'results/'
+    res_dir = 'bottle_results/'
     results_file = res_dir+"results{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
@@ -56,14 +56,18 @@ def main(args):
         "val": transforms.Compose([transforms.ToTensor()])
     }
 
-    VOC_root = args.data_path
+    VOC_root = "./bottle/"
     # check voc root
-    if os.path.exists(os.path.join(VOC_root, "VOCdevkit")) is False:
-        raise FileNotFoundError("VOCdevkit dose not in path:'{}'.".format(VOC_root))
+    # if os.path.exists(os.path.join(VOC_root, "VOCdevkit")) is False:
+    #     raise FileNotFoundError("VOCdevkit dose not in path:'{}'.".format(VOC_root))
 
     # load train data set
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> train.txt
-    train_dataset = VOCDataSet(VOC_root, "2007", data_transform["train"], "train.txt")
+    train_dataset = BottleDataSet(VOC_root, data_transform["train"], "train.txt")
+
+    # load validation data set
+    # VOCdevkit -> VOC2012 -> ImageSets -> Main -> val.txt
+    val_dataset = BottleDataSet(VOC_root, data_transform["val"], "val.txt")
     train_sampler = None
 
     # 是否按图片相似高宽比采样图片组成batch
@@ -96,7 +100,7 @@ def main(args):
 
     # load validation data set
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> val.txt
-    val_dataset = VOCDataSet(VOC_root, "2007", data_transform["val"], "val.txt")
+    # val_dataset = VOCDataSet(VOC_root, "2007", data_transform["val"], "val.txt")
     val_data_set_loader = torch.utils.data.DataLoader(val_dataset,
                                                       batch_size=1,
                                                       shuffle=False,
@@ -199,7 +203,7 @@ if __name__ == "__main__":
     # 训练数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='./', help='dataset')
     # 检测目标类别数(不包含背景)
-    parser.add_argument('--num-classes', default=20, type=int, help='num_classes')
+    parser.add_argument('--num-classes', default=2, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址
@@ -221,7 +225,7 @@ if __name__ == "__main__":
                         metavar='W', help='weight decay (default: 1e-4)',
                         dest='weight_decay')
     # 训练的batch size
-    parser.add_argument('--batch_size', default=8, type=int, metavar='N',
+    parser.add_argument('--batch_size', default=6, type=int, metavar='N',
                         help='batch size when training.')
     parser.add_argument('--print-freq', default=100, type=int, help='print frequency')
     parser.add_argument('--aspect-ratio-group-factor', default=3, type=int)
